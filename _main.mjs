@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir } from "node:fs/promises";
 const name = "main";
-const version = "1.0.0";
+const tag = "v1.0.0";
 console.log(process.argv[1]);
 const localName = process.platform === "windows" ? `${name}.exe` : name;
 let file;
@@ -22,9 +22,9 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
       ? `${name}-${target}.exe`
       : `${name}-${target}`;
   file = join(dirname(process.argv[1]), "target", "release", localName);
-  await mkdir(bin, { recursive: true });
+  await mkdir(dirname(file), { recursive: true });
   const response = await fetch(
-    `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/v${version}/${remoteName}`
+    `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${tag}/${remoteName}`
   );
   await pipeline(response.body, createWriteStream(file));
 }
