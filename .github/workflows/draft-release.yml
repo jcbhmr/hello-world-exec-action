@@ -20,7 +20,6 @@ jobs:
       - run: cargo build --bin main --release --target "$MY_TARGET"
       # - run: cargo build --bin pre --release --target "$MY_TARGET"
       # - run: cargo build --bin post --release --target "$MY_TARGET"
-      - run: tree -a "target/$MY_TARGET"
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
@@ -38,7 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
-      - run: tree -a
       - run: |
           for target in *; do
             [[ $target == *windows* ]] && exe='.exe' || exe=''
@@ -47,7 +45,6 @@ jobs:
             mv "$target/post$exe" "post-$target$exe" || true
             rm -rf "$target"
           done
-      - run: tree -a
       - run: gh release create ' ' ./* --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
