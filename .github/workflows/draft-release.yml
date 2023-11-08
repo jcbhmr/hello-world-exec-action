@@ -9,12 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cargo build --locked --release
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
-          name: release-artifact
+          name: ${{ matrix.os }}
           path: target/release/my-action
-  draft-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      -

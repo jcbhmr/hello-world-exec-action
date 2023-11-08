@@ -10,9 +10,10 @@ const pkg = await readFile(
 );
 const name = pkg.match(/name = ["'](.+)["']/)[1];
 const version = pkg.match(/version = ["'](.+)["']/)[1];
+const binname = process.platform === "windows" ? `${name}.exe` : name;
 let file;
 if (dirname(process.argv[1]).startsWith(process.cwd())) {
-  file = join(dirname(process.argv[1]), "target", "debug", name);
+  file = join(dirname(process.argv[1]), "target", "debug", binname);
 } else {
   const DEST = join(process.env.RUNNER_TOOL_CACHE, name, version, process.arch);
   if (!existsSync(DEST)) {
@@ -24,7 +25,7 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
     const ext = process.platform === "windows" ? "zip" : "tar.gz";
     const filename = `${name}-${target}.${ext}`;
     const response = await fetch(
-      `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${version}/${filename}`
+      `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/v${version}/${filename}`
     );
     const SRC = join(DEST, filename);
     await pipeline(response.body, createWriteStream(SRC));
@@ -39,7 +40,7 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
     }
     await once(subprocess2, "exit");
   }
-  file = join(DEST, name);
+  file = join(DEST, binname);
 }
 const subprocess3 = spawn(file, {
   stdio: "inherit",
