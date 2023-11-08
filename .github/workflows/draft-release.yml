@@ -9,21 +9,15 @@ jobs:
           - { os: macos-latest, target: x86_64-apple-darwin }
           - { os: windows-latest, target: x86_64-pc-windows-msvc }
     runs-on: ${{ matrix.os }}
+    env:
+      target: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
-      - run: rustup target add "$TARGET"
-        env:
-          TARGET: ${{ matrix.target }}
+      - run: rustup target add "$target"
       - run: cargo fetch
-      - run: cargo build --bin main --locked --release --target "$TARGET"
-        env:
-          TARGET: ${{ matrix.target }}
-      # - run: cargo build --bin pre --locked --release --target "$TARGET"
-      #   env:
-      #     TARGET: ${{ matrix.target }}
-      # - run: cargo build --bin post --locked --release --target "$TARGET"
-      #   env:
-      #     TARGET: ${{ matrix.target }}
+      - run: cargo build --bin main --locked --release --target "$target"
+      # - run: cargo build --bin pre --locked --release --target "$target"
+      # - run: cargo build --bin post --locked --release --target "$target"
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
