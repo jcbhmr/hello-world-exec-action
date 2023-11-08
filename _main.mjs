@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir } from "node:fs/promises";
 const name = "main";
-const tag = "v1.0.0";
+const release = "v1.0.0";
 const binName = process.platform === "windows" ? `${name}.exe` : name;
 let file;
 if (dirname(process.argv[1]).startsWith(process.cwd())) {
@@ -16,7 +16,7 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
     "linux,x64": "x86_64-unknown-linux-gnu",
   }[[process.platform, process.arch].toString()];
   const response = await fetch(
-    `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${tag}/${target}.zip`
+    `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${release}/${target}.zip`
   );
   await mkdir(dirname(file), { recursive: true });
   await pipeline(response.body, createWriteStream(file));
