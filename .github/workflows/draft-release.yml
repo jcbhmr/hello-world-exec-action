@@ -17,9 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: rustup target add "$MY_TARGET"
-      - run: cargo build --bin main --locked --release --target "$MY_TARGET"
-      # - run: cargo build --bin pre --locked --release --target "$MY_TARGET"
-      # - run: cargo build --bin post --locked --release --target "$MY_TARGET"
+      - run: cargo build --bin main --release --target "$MY_TARGET"
+      # - run: cargo build --bin pre --release --target "$MY_TARGET"
+      # - run: cargo build --bin post --release --target "$MY_TARGET"
       - run: tree -a "target/$MY_TARGET"
       - uses: actions/upload-artifact@v3
         with:
