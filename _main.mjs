@@ -26,4 +26,4 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
 }
 const subprocess = spawn(file, { stdio: "inherit" });
 const [exitCode] = await once(subprocess, "exit");
-process.exitCode += exitCode;
+process.exitCode = exitCode;
