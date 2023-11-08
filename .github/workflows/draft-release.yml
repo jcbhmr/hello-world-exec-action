@@ -4,12 +4,54 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: cargo build --locked --release
+      - run: rustup target add "$TARGET"
+        env:
+          TARGET: ${{ matrix.target }}
+      - run: cargo fetch
+      - run: cargo build --bin main --locked --release --target "$TARGET"
+        env:
+          TARGET: ${{ matrix.target }}
+      # - run: cargo build --bin pre --locked --release --target "$TARGET"
+      #   env:
+      #     TARGET: ${{ matrix.target }}
+      # - run: cargo build --bin post --locked --release --target "$TARGET"
+      #   env:
+      #     TARGET: ${{ matrix.target }}
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os }}
-          path: target/release/my-action
+          name: ${{ matrix.target }}
+          path: |
+            target/release/main
+            # target/release/pre
+            # target/release/post
+  draft-release:
+    needs: build
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+      - run: tree -a
+      - run: |
+          for target in *; do
+            pushd "$target"
+            if [[ $target == *windows* ]]; then
+              zip -r "../$target.zip" .
+            else
+              tar -zcvf "../$target.tar.gz" .
+            fi
+            popd
+            rm -rf "$target"
+          done
+      - run: gh release create ' ' ./* --draft 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          
