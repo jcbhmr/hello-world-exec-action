@@ -2,6 +2,7 @@ import { dirname, join } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { mkdir } from "node:fs/promises";
+import assert from "node:assert/strict";
 const name = "main";
 const release = "v1.0.0";
 const binName = process.platform === "windows" ? `${name}.exe` : name;
@@ -18,12 +19,11 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
   const response = await fetch(
     `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${release}/${target}.zip`
   );
+  assert(response.ok, `${response.status} ${response.url}`);
   await mkdir(dirname(file), { recursive: true });
   await pipeline(response.body, createWriteStream(file));
   await chmod(file, 0o755);
 }
 const subprocess = spawn(file, { stdio: "inherit" });
 const [exitCode] = await once(subprocess, "exit");
-if (exitCode) {
-  process.exit(exitCode);
-}
+process.exitCode += exitCode;
