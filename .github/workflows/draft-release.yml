@@ -25,9 +25,9 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            target/release/main
-            # target/release/pre
-            # target/release/post
+            target/release/main(.exe)?
+            target/release/pre(.exe)?
+            target/release/post(.exe)?
   draft-release:
     needs: build
     permissions:
@@ -39,11 +39,7 @@ jobs:
       - run: |
           for target in *; do
             pushd "$target"
-            if [[ $target == *windows* ]]; then
-              zip -r "../$target.zip" .
-            else
-              tar -zcvf "../$target.tar.gz" .
-            fi
+            zip -r "../$target.zip" .
             popd
             rm -rf "$target"
           done
