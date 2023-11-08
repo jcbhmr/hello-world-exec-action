@@ -6,7 +6,6 @@ import { once } from "node:events";
 import { mkdir } from "node:fs/promises";
 const name = "main";
 const tag = "v1.0.0";
-console.log(process.argv[1]);
 const localName = process.platform === "windows" ? `${name}.exe` : name;
 let file;
 if (dirname(process.argv[1]).startsWith(process.cwd())) {
