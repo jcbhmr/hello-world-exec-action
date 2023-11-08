@@ -25,9 +25,9 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            target/release/main(.exe)?
-            target/release/pre(.exe)?
-            target/release/post(.exe)?
+            target/release/main*
+            target/release/pre*
+            target/release/post*
   draft-release:
     needs: build
     permissions:
