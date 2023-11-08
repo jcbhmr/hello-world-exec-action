@@ -13,21 +13,24 @@ jobs:
       run:
         shell: bash
     env:
-      target: ${{ matrix.target }}
+      MY_TARGET: ${{ matrix.target }}
     steps:
       - uses: actions/checkout@v4
-      - run: rustup target add "$target"
-      - run: cargo fetch
-      - run: cargo build --bin main --locked --release --target "$target"
-      # - run: cargo build --bin pre --locked --release --target "$target"
-      # - run: cargo build --bin post --locked --release --target "$target"
+      - run: rustup target add "$MY_TARGET"
+      - run: cargo build --bin main --locked --release --target "$MY_TARGET"
+      # - run: cargo build --bin pre --locked --release --target "$MY_TARGET"
+      # - run: cargo build --bin post --locked --release --target "$MY_TARGET"
+      - run: tree -a "target/$MY_TARGET"
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/main{,.exe}
-            target/${{ matrix.target }}/release/pre{,.exe}
-            target/${{ matrix.target }}/release/post{,.exe}
+            target/${{ matrix.target }}/release/main
+            target/${{ matrix.target }}/release/main.exe
+            target/${{ matrix.target }}/release/pre
+            target/${{ matrix.target }}/release/pre.exe
+            target/${{ matrix.target }}/release/post
+            target/${{ matrix.target }}/release/post.exe
   draft-release:
     needs: build
     permissions:
@@ -38,10 +41,10 @@ jobs:
       - run: tree -a
       - run: |
           for target in *; do
-            [[ $target == *windows* ]] && s='.exe' || s=''
-            mv "$target/main$s" "main-$target$s"
-            mv "$target/pre$s" "pre-$target$s" || true
-            mv "$target/post$s" "post-$target$s" || true
+            [[ $target == *windows* ]] && exe='.exe' || exe=''
+            mv "$target/main$exe" "main-$target$exe"
+            mv "$target/pre$exe" "pre-$target$exe" || true
+            mv "$target/post$exe" "post-$target$exe" || true
             rm -rf "$target"
           done
       - run: tree -a
