@@ -9,20 +9,21 @@ let file;
 if (dirname(process.argv[1]).startsWith(process.cwd())) {
   file = join(dirname(process.argv[1]), "target", "debug", binName);
 } else {
+  file = join(dirname(process.argv[1]), "target", "release", binName);
   const target = {
     "win32,x64": "x86_64-pc-windows-msvc",
     "darwin,x64": "x86_64-apple-darwin",
     "linux,x64": "x86_64-unknown-linux-gnu",
   }[[process.platform, process.arch].toString()];
-  const url = `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${tag}/${target}.zip`;
-  file = join(dirname(process.argv[1]), "target", "release", binName);
-  await mkdir(dirname(file), { recursive: true });
-  const subprocess1 = spawn(
-    `curl -fsSL "$url" | unzip -d "$dir"`,
-    { shell: "bash", env: { ...process.env, url, bin: dirname(file) } },
+  const response = await fetch(
+    `https://github.com/${process.env.GITHUB_ACTION_REPOSITORY}/releases/download/${tag}/${target}.zip`
   );
-  await once(subprocess1, "exit");
+  await mkdir(dirname(file), { recursive: true });
+  await pipeline(response.body, createWriteStream(file));
+  await chmod(file, 0o755);
 }
-const subprocess2 = spawn(file, { stdio: "inherit" });
-await once(subprocess2, "spawn");
-subprocess2.on("exit", (x) => process.exit(x));
+const subprocess = spawn(file, { stdio: "inherit" });
+const [exitCode] = await once(subprocess, "exit");
+if (exitCode) {
+  process.exit(exitCode);
+}

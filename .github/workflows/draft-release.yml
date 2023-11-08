@@ -25,9 +25,9 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/release/main*
-            target/${{ matrix.target }}/release/pre*
-            target/${{ matrix.target }}/release/post*
+            target/${{ matrix.target }}/release/main?(.exe)
+            target/${{ matrix.target }}/release/pre?(.exe)
+            target/${{ matrix.target }}/release/post?(.exe)
   draft-release:
     needs: build
     permissions:
@@ -38,13 +38,14 @@ jobs:
       - run: tree -a
       - run: |
           for target in *; do
-            pushd "$target"
-            zip -r "../$target.zip" .
-            popd
+            [[ $target == *windows* ]] && s='.exe' || s=''
+            mv "$target/main$s" "main-$target$s"
+            mv "$target/pre$s" "pre-$target$s" || true
+            mv "$target/post$s" "post-$target$s" || true
             rm -rf "$target"
           done
-      - run: gh release create ' ' ./* --draft 
+      - run: tree -a
+      - run: gh release create ' ' ./* --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          
