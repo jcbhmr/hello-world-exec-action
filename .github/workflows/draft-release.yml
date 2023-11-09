@@ -35,6 +35,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           path: target
+      - run: chmod -R +x target
       - run: |
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
