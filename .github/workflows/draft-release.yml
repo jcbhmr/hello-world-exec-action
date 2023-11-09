@@ -2,17 +2,36 @@ name: Draft release
 on: workflow_dispatch
 jobs:
   build:
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      MY_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup target add "$MY_TARGET"
+      - run: cargo build --target "$MY_TARGET" --release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}
+  draft-release:
+    needs: build
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: rustup target add x86_64-unknown-linux-gnu
-      - run: rustup target add x86_64-apple-darwin
-      - run: rustup target add x86_64-pc-windows-msvc
-      - run: cargo build --bin main --release --target x86_64-unknown-linux-gnu
-      - run: cargo build --bin main --release --target x86_64-apple-darwin
-      - run: cargo build --bin main --release --target x86_64-pc-windows-msvc
+      - uses: actions/download-artifact@v3
+        with:
+          path: target
       - run: |
           git config user.name "GitHub Actions"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
