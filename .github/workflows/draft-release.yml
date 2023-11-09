@@ -23,5 +23,4 @@ jobs:
       - run: gh release create '?' --draft --target $(git rev-parse HEAD~1)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: always()
-        run: git push -d origin "$(git branch --show-current)"
+      - run: git push -d origin "$(git branch --show-current)"
