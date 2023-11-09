@@ -8,7 +8,7 @@ const target = {
   "darwin,x64": "x86_64-apple-darwin",
   "linux,x64": "x86_64-unknown-linux-gnu",
 }[[process.platform, process.arch].toString()];
-const exe = process.platform === "windows" ? ".exe" : "";
+const exe = process.platform === "win32" ? ".exe" : "";
 console.log(
   join(dirname(process.argv[1]), "target", target, "release", name + exe),
   join(dirname(process.argv[1]), "target", "debug", name + exe),
