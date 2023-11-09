@@ -37,7 +37,7 @@ jobs:
             mv "$target/main$exe" "main-$target$exe"
             rm -rf "$target"
           done
-      - run: gh release create ' ' ./* --draft
+      - run: gh release create '?' ./* --draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

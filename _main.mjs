@@ -1,8 +1,10 @@
 import { dirname, join } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdir } from "node:fs/promises";
+import { mkdir, chmod } from "node:fs/promises";
 import assert from "node:assert/strict";
+import { pipeline } from "node:stream/promises";
+import { createWriteStream } from "node:fs";
 const name = "main";
 const release = "v1.0.1";
 const exe = process.platform === "windows" ? ".exe" : "";
@@ -25,5 +27,4 @@ if (dirname(process.argv[1]).startsWith(process.cwd())) {
   await chmod(file, 0o755);
 }
 const subprocess = spawn(file, { stdio: "inherit" });
-const [exitCode] = await once(subprocess, "exit");
-process.exitCode = exitCode;
+process.exitCode = (await once(subprocess, "exit"))[0];
