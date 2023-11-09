@@ -1,43 +1,27 @@
-name: Draft Release
+name: Draft release
 on: workflow_dispatch
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
-          - { os: macos-latest, target: x86_64-apple-darwin }
-          - { os: windows-latest, target: x86_64-pc-windows-msvc }
-    runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
-    env:
-      MY_TARGET: ${{ matrix.target }}
-    steps:
-      - uses: actions/checkout@v4
-      - run: rustup target add "$MY_TARGET"
-      - run: cargo build --bin main --release --target "$MY_TARGET"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.target }}
-          path: |
-            target/${{ matrix.target }}/release/main
-            target/${{ matrix.target }}/release/main.exe
-  draft-release:
-    needs: build
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
+      - run: rustup target add x86_64-unknown-linux-gnu
+      - run: rustup target add x86_64-apple-darwin
+      - run: rustup target add x86_64-pc-windows-msvc
+      - run: cargo build --bin main --release --target x86_64-unknown-linux-gnu
+      - run: cargo build --bin main --release --target x86_64-apple-darwin
+      - run: cargo build --bin main --release --target x86_64-pc-windows-msvc
       - run: |
-          for target in *; do
-            [[ $target == *windows* ]] && exe='.exe' || exe=''
-            mv "$target/main$exe" "main-$target$exe"
-            rm -rf "$target"
-          done
-      - run: gh release create '?' ./* --draft
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - run: git checkout -b temp-$RANDOM
+      - run: git add -Af
+      - run: git commit --allow-empty -m 'Draft release'
+      - run: git push -u origin "$(git branch --show-current)"
+      - run: gh release create '?' --draft --target $(git rev-parse HEAD~1)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - if: always()
+        run: git push -d origin "$(git branch --show-current)"
