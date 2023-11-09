@@ -1,31 +1,33 @@
-import { dirname, join } from "node:path";
+import { createReadStream, createWriteStream } from "node:fs";
 import { spawn } from "node:child_process";
-import { once } from "node:events";
-import { createReadStream, createWriteStream, existsSync } from "node:fs";
-import { copyFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { createGunzip } from "node:zlib";
-const name = "main";
-const target = {
-  "win32,x64": "x86_64-pc-windows-msvc",
-  "darwin,x64": "x86_64-apple-darwin",
-  "linux,x64": "x86_64-unknown-linux-gnu",
-}[[process.platform, process.arch].toString()];
-const exe = process.platform === "win32" ? ".exe" : "";
-const __dirname = dirname(process.argv[1]);
+import { chmod } from "node:fs/promises";
+import { once } from "node:events";
+const name = "main"; // 👈 CHANGE ME!
+const ext = process.platform === "win32" ? ".exe" : "";
 let file;
 if (dirname(process.argv[1]).startsWith(process.cwd())) {
-  file = join(dirname(process.argv[1]), "target", "debug", name + exe);
+  file = join(dirname(process.argv[1]), "target", "debug", name + ext);
 } else {
+  const target = {
+    "win32,x64": "x86_64-pc-windows-msvc",
+    "darwin,x64": "x86_64-apple-darwin",
+    "linux,x64": "x86_64-unknown-linux-gnu",
+  }[[process.platform, process.arch].toString()];
   file = join(
     dirname(process.argv[1]),
     "target",
     target,
     "release",
-    name + exe
+    name + ext
   );
-  const gz = join(dirname(file), name + exe + ".gz");
-  await copyFile(file, gz);
-  await pipeline(createReadStream(gz), createGunzip(), createWriteStream(file));
+  await pipeline(
+    createReadStream(`${file}.gz`),
+    createGunzip(),
+    createWriteStream(file)
+  );
+  await chmod(file, 0o755);
 }
 const subprocess = spawn(file, { stdio: "inherit" });
 process.exitCode = (await once(subprocess, "exit"))[0];

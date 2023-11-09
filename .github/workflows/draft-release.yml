@@ -22,7 +22,7 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            target/${{ matrix.target }}/.gitkeep
+            target/${{ matrix.target }}/.keeptree
             target/${{ matrix.target }}/release/main
             target/${{ matrix.target }}/release/main.exe
   draft-release:
