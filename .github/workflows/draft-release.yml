@@ -21,7 +21,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
-          path: target/${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/main
+            target/${{ matrix.target }}/release/main.exe
   draft-release:
     needs: build
     permissions:
